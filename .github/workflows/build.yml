@@ -47,7 +47,9 @@ jobs:
             exit 1
           fi
 
-          find packages -maxdepth 1 -type f -name '*.deb' -exec cp {} dist/ \\; 2>/dev/null || true
+          for deb in packages/*.deb; do
+            if [[ -f "$deb" ]]; then cp "$deb" dist/; fi
+          done
           ls -lh dist
 
       - name: Upload build artifacts
