@@ -35,7 +35,19 @@ jobs:
           fi
 
           cp "$dylib_path" dist/adspeed.dylib
-          find packages -maxdepth 1 -type f -name '*.deb' -exec cp {} dist/ \; 2>/dev/null || true
+
+          echo "Inspecting Mach-O dependencies:"
+          otool -L dist/adspeed.dylib
+          if otool -L dist/adspeed.dylib | grep -q "CydiaSubstrate"; then
+            echo "Unexpected CydiaSubstrate dependency remains."
+            exit 1
+          fi
+          if nm -u dist/adspeed.dylib | grep -q "MSHookMessageEx"; then
+            echo "Unexpected unresolved MSHookMessageEx symbol remains."
+            exit 1
+          fi
+
+          find packages -maxdepth 1 -type f -name '*.deb' -exec cp {} dist/ \\; 2>/dev/null || true
           ls -lh dist
 
       - name: Upload build artifacts
