@@ -1,5 +1,6 @@
 #export THEOS = /Users/huynguyen/Desktop/theos
 ARCHS = arm64 arm64e
+adspeed_USE_SUBSTRATE = 0
 DEBUG = 0
 FINALPACKAGE = 1
 FOR_RELEASE = 1
