@@ -2,7 +2,31 @@
 #include <string>
 #import <Foundation/Foundation.h>
 #import <objc/runtime.h>
-#import <substrate.h>
+#include <dlfcn.h>
+
+// Resolve Substrate's hook API from LiveContainer's globally loaded
+// CydiaSubstrate/ElleKit compatibility layer instead of linking to the
+// jailbreak-only absolute install path.
+typedef void (*LCMSHookMessageExFn)(Class, SEL, IMP, IMP *);
+
+static void LCMSHookMessageEx(Class cls, SEL selector, IMP replacement, IMP *original) {
+    static LCMSHookMessageExFn hookFunction = NULL;
+    static BOOL didResolve = NO;
+
+    if (!didResolve) {
+        didResolve = YES;
+        hookFunction = (LCMSHookMessageExFn)dlsym(RTLD_DEFAULT, "MSHookMessageEx");
+    }
+
+    if (hookFunction) {
+        hookFunction(cls, selector, replacement, original);
+    } else {
+        NSLog(@"[adspeed] MSHookMessageEx is unavailable; LiveContainer's Substrate compatibility layer was not loaded.");
+    }
+}
+
+#define MSHookMessageEx LCMSHookMessageEx
+
 
 //No func
 static BOOL returnNo(id self, SEL _cmd) {
